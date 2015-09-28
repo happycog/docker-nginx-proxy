@@ -1,7 +1,12 @@
 FROM danday74/nginx-lua
 
 RUN apt-get update
-RUN apt-get install -y curl
+RUN apt-get install -y curl dnsmasq dnsutils
+
+RUN echo "listen-address=127.0.0.1" >> /etc/dnsmasq.conf
+RUN echo "user=root" >> /etc/dnsmasq.conf
+RUN echo "prepend domain-name-servers 127.0.0.1;" >> /etc/dhcp/dhclient.conf
+RUN echo "nameserver 127.0.0.1" >> /etc/resolvconf/resolv.conf.d/base
 
 ENV DOCKER_BUCKET get.docker.com
 ENV DOCKER_VERSION 1.8.2
@@ -14,3 +19,5 @@ RUN curl -fSL "https://${DOCKER_BUCKET}/builds/Linux/x86_64/docker-$DOCKER_VERSI
 ADD nginx.conf /nginx/conf/nginx.conf
 RUN mkdir /nginx/lua
 ADD lookup.lua /nginx/lua/lookup.lua
+
+CMD dnsmasq && nginx -g "daemon off;"
